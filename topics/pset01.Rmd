@@ -1,0 +1,77 @@
+---
+title: "pset1"
+author: "Luis Chávez"
+date: "2024-05-25"
+output: html_document
+---
+
+Los datos han sido estraídos de:
+[Acceder](https://stats.oarc.ucla.edu/stata/examples/ara/applied-regression-analysis-by-fox-data-files/)
+
+## Filtro
+Se utiliza el filtro o medidas de utilidad colectiva.
+
+```{r}
+library(haven)
+library(FSinR)
+data <- read_dta("ericksen.dta")
+data <- as.data.frame(data)
+
+#Forward Selection
+Evaluador_Gini <- giniIndex() # filtro de gini
+Busqueda_SFS   <- searchAlgorithm(searcher = "sequentialForwardSelection")
+result1 <- featureSelection(data, 'undcount', Busqueda_SFS, Evaluador_Gini)
+result1$bestFeatures
+
+#Backward Selection
+Evaluador_Gini <- giniIndex() # filtro de gini
+Busqueda_SFBS  <- sequentialFloatingBackwardSelection()
+result2 <- featureSelection(data, 'undcount', Busqueda_SFBS, Evaluador_Gini) 
+result2$bestFeatures
+```
+
+A partir de las dos corridas, se puede observar que en uno área es el mejor atributo, mientras que en el otro caso, housing, city y countprc son los mejores atributos.
+
+
+## Envoltura
+El código es el siguiente:
+
+```{r}
+Evaluador_bglm <- wrapperEvaluator(learner          = "bayesglm", 
+                                   resamplingParams = list(method = "repeatedcv", #cross-valid 
+                                                           repeats = 3)) 
+resultado_bglm <- featureSelection(data, 'undcount', Busqueda_SFS, Evaluador_bglm) 
+resultado_bglm$bestFeatures
+```
+
+Se aprecia que housing no es relevante.
+
+
+## Envoltura BORUTA
+Aqui se considera dos casos. Para 200 iteraciones:
+```{r}
+library(Boruta)
+boruta <- Boruta(undcount ~ ., data = data, doTrace = 0, maxRuns = 200) 
+boruta |> print()
+
+boruta |> plot(las = 2, cex.axis = 0.7)
+boruta |> attStats()
+boruta |> plotImpHistory()
+```
+
+Housing es tentativamente importante, mientras que Area de ninguna manera es importante.
+
+Para 400 iteraciones se tiene:
+```{r}
+boruta2 <- Boruta(undcount ~ ., data = data, doTrace = 0, maxRuns = 400) 
+boruta2 |> print()
+
+boruta2 |> plot(las = 2, cex.axis = 0.7)
+boruta2 |> attStats()
+boruta2 |> plotImpHistory()
+```
+
+Area nuevamente de ninguna manera es importante.
+
+A partir de los outcomes mostrados, se concluye que hay cierta inconsistencia en los algoritmos y filtros ya que se contradicen, por ejemplo, en el caso de Area.
+Sin embargo, se puede estrablecer que BORUTA es más potente desde la perspectiva estadística ya que las iteraciones permiten evidenciar un patrón de importancia de las variables seleccionadas.
