@@ -1,4 +1,4 @@
-# Métodos Matemáticos en Economía
+# Mathematical methods in economics
 
 **Facultad:** Facultad de Economía  
 **Curso:** Métodos Matemáticos en Economía  
