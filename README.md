@@ -1,7 +1,6 @@
 # Mathematical methods in economics
 
-**Facultad:** Facultad de Economía  
-**Curso:** Métodos Matemáticos en Economía  
+**Facultad:** Facultad de Economía
 **Semestre:** 2025-I  
 **Duración:** 16 semanas  
 
